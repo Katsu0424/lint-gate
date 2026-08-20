@@ -13,6 +13,15 @@ const BASE_SKIP_DIRS = [
   "storybook-static",
 ];
 
+const DEFAULT_PROTECTED_BRANCHES = ["main", "master"];
+const DEFAULT_PROTECTED_FILES = ["(^|/)\\.env$"];
+// force push(--force / -f / --force-with-lease)とリポジトリ削除。
+// [^&|;]* で区切りを跨がず、`git push && rm -f x` のような別コマンドの -f に誤発火しない
+const DEFAULT_DENY_COMMANDS = [
+  "git\\s+push\\b[^&|;]*(--force\\b|\\s-f\\b)",
+  "gh\\s+repo\\s+delete\\b",
+];
+
 export function loadConfig(root) {
   const raw = readConfigFile(join(root, "lint-gate.config.json"));
   return {
@@ -22,6 +31,16 @@ export function loadConfig(root) {
       (p) => new RegExp(p),
     ),
     extraChecks: raw.hook?.extraChecks ?? [],
+    guard: guardConfig(raw.guard ?? {}),
+  };
+}
+
+function guardConfig(raw) {
+  return {
+    protectedBranches: raw.protectedBranches ?? DEFAULT_PROTECTED_BRANCHES,
+    branchPattern: raw.branchPattern ? new RegExp(raw.branchPattern) : null,
+    protectedFiles: (raw.protectedFiles ?? DEFAULT_PROTECTED_FILES).map((p) => new RegExp(p)),
+    denyCommands: (raw.denyCommands ?? DEFAULT_DENY_COMMANDS).map((p) => new RegExp(p)),
   };
 }
 

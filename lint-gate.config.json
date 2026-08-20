@@ -1,0 +1,3 @@
+{
+  "guard": { "branchPattern": "^feature/issue-\\d+-" }
+}
