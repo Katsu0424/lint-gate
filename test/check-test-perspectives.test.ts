@@ -73,6 +73,18 @@ describe("checkTestPerspectives", () => {
     expect(errors.some((e) => e.includes("リグレッション"))).toBe(true);
   });
 
+  it("[エッジ] filePattern(testFileRe)を差し替えると対象ファイルが変わる", () => {
+    root = makeTree({
+      "test/a.spec.ts": 'it("x", () => {});\n',
+      "test/b.test.ts": 'it("y", () => {});\n',
+    });
+    const config = baseConfig({ testFileRe: /\.spec\.ts$/ });
+    const result = checkTestPerspectives(root, config);
+    expect(result.count).toBe(1);
+    expect(result.errors.some((e) => e.includes("a.spec.ts"))).toBe(true);
+    expect(result.errors.some((e) => e.includes("b.test.ts"))).toBe(false);
+  });
+
   it("[エッジ] fullPathPatterns を差し替えると濃淡の境界が変わる", () => {
     root = makeTree({ "packages/core/a.test.ts": VALID_FILE });
     const config = baseConfig({ fullPathPatterns: [/(^|\/)packages\/core\//] });

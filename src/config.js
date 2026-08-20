@@ -13,6 +13,7 @@ const BASE_SKIP_DIRS = [
   "storybook-static",
 ];
 
+const DEFAULT_TEST_FILE_PATTERN = "\\.test\\.(ts|tsx|js|jsx|mjs|cjs)$";
 const DEFAULT_PROTECTED_BRANCHES = ["main", "master"];
 const DEFAULT_PROTECTED_FILES = ["(^|/)\\.env$"];
 // force push(--force / -f / --force-with-lease)とリポジトリ削除。
@@ -30,6 +31,7 @@ export function loadConfig(root) {
     fullPathPatterns: (raw.testPerspectives?.fullPathPatterns ?? ["(^|/)test/domain/"]).map(
       (p) => new RegExp(p),
     ),
+    testFileRe: new RegExp(raw.testPerspectives?.filePattern ?? DEFAULT_TEST_FILE_PATTERN),
     extraChecks: raw.hook?.extraChecks ?? [],
     guard: guardConfig(raw.guard ?? {}),
   };

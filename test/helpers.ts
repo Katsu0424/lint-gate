@@ -20,6 +20,7 @@ export interface TestConfig {
   skipDirs: Set<string>;
   suppressionsAllowlist: string;
   fullPathPatterns: RegExp[];
+  testFileRe: RegExp;
   extraChecks: { pattern: string; command: string[] }[];
 }
 
@@ -28,6 +29,7 @@ export function baseConfig(overrides: Partial<TestConfig> = {}): TestConfig {
     skipDirs: new Set(["node_modules", ".git"]),
     suppressionsAllowlist: "suppressions-allowlist.json",
     fullPathPatterns: [/(^|\/)test\/domain\//],
+    testFileRe: /\.test\.(ts|tsx|js|jsx|mjs|cjs)$/,
     extraChecks: [],
     ...overrides,
   };
