@@ -17,6 +17,9 @@ importers:
       eslint-plugin-sonarjs:
         specifier: ^4.2.0
         version: 4.2.0(eslint@9.39.5(supports-color@7.2.0))
+      issue-keeper:
+        specifier: github:Katsu0424/issue-keeper
+        version: https://codeload.github.com/Katsu0424/issue-keeper/tar.gz/08532c7f4341d81326ce803bbc1f1bb2758a1de5
       typescript-eslint:
         specifier: ^8.46.4
         version: 8.67.0(eslint@9.39.5(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
@@ -618,6 +621,10 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
+  commander@14.0.3:
+    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
+    engines: {node: '>=20'}
+
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
@@ -794,6 +801,12 @@ packages:
 
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
+
+  issue-keeper@https://codeload.github.com/Katsu0424/issue-keeper/tar.gz/08532c7f4341d81326ce803bbc1f1bb2758a1de5:
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/Katsu0424/issue-keeper/tar.gz/08532c7f4341d81326ce803bbc1f1bb2758a1de5}
+    version: 0.1.0
+    engines: {node: '>=22.18'}
+    hasBin: true
 
   js-tokens@9.0.1:
     resolution: {integrity: sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==}
@@ -1103,6 +1116,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -1568,6 +1584,8 @@ snapshots:
 
   color-name@1.1.4: {}
 
+  commander@14.0.3: {}
+
   concat-map@0.0.1: {}
 
   cross-spawn@7.0.6:
@@ -1769,6 +1787,11 @@ snapshots:
       is-extglob: 2.1.1
 
   isexe@2.0.0: {}
+
+  issue-keeper@https://codeload.github.com/Katsu0424/issue-keeper/tar.gz/08532c7f4341d81326ce803bbc1f1bb2758a1de5:
+    dependencies:
+      commander: 14.0.3
+      zod: 4.4.3
 
   js-tokens@9.0.1: {}
 
@@ -2063,3 +2086,5 @@ snapshots:
   yaml@2.9.0: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@4.4.3: {}
