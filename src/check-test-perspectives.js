@@ -19,12 +19,11 @@ import { walk } from "./walk.js";
 
 export const PERSPECTIVES = ["正常系", "エッジ", "異常系", "否定", "リグレッション"];
 const BASE_REQUIRED = ["正常系", "異常系"];
-export const TEST_FILE_RE = /\.test\.(ts|tsx|js|jsx|mjs|cjs)$/;
 
 export function checkTestPerspectives(root, config) {
   const errors = [];
   let count = 0;
-  for (const file of walk(root, config.skipDirs, TEST_FILE_RE)) {
+  for (const file of walk(root, config.skipDirs, config.testFileRe)) {
     count++;
     errors.push(...checkFile(root, file, config));
   }

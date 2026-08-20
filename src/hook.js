@@ -6,7 +6,7 @@
 // を実行し、違反メッセージの配列を返す(空なら合格)。
 import { spawnSync } from "node:child_process";
 import { checkSuppressions } from "./check-suppressions.js";
-import { checkTestPerspectives, TEST_FILE_RE } from "./check-test-perspectives.js";
+import { checkTestPerspectives } from "./check-test-perspectives.js";
 
 const SOURCE_FILE_RE = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
 
@@ -14,7 +14,7 @@ export function runHook(root, config, input) {
   const filePath = input?.tool_input?.file_path ?? "";
   if (typeof filePath !== "string" || filePath === "") return [];
   const errors = [];
-  if (TEST_FILE_RE.test(filePath)) {
+  if (config.testFileRe.test(filePath)) {
     errors.push(...checkTestPerspectives(root, config).errors);
   }
   if (SOURCE_FILE_RE.test(filePath)) {

@@ -29,6 +29,16 @@ Node >= 20。使う機能に応じた peer だけ入れればよい(すべて op
 }
 ```
 
+**既存リポジトリへの後付け導入**では `lint-gate/biome` の formatter 設定が全面再フォーマットを要求することがある。その場合は linter のみの `lint-gate/biome-lint` を使い、formatter は自前設定(または無効)で維持する:
+
+```jsonc
+// biome.json — 後付け導入(formatter は持ち込まない)
+{
+  "extends": ["lint-gate/biome-lint"],
+  "formatter": { "enabled": false } // または既存リポジトリの整形設定をここに書く
+}
+```
+
 ### ESLint 設定ファクトリ
 
 ```js
@@ -67,7 +77,10 @@ export default createConfig({
   "suppressions": { "allowlist": "scripts/suppressions-allowlist.json" },
   "testPerspectives": {
     // 全 5 観点必須にするパス(正規表現)。既定: test/domain/ 配下
-    "fullPathPatterns": ["(^|/)test/domain/"]
+    "fullPathPatterns": ["(^|/)test/domain/"],
+    // 対象テストファイルのパターン(正規表現)。既定: .test.(ts|tsx|js|jsx|mjs|cjs)
+    // .spec.ts 運用のリポジトリでは必ず設定する(未設定だと対象 0 件で素通りし、警告だけが出る)
+    "filePattern": "\\.spec\\.ts$"
   },
   "hook": {
     // hook サブコマンドの追加ディスパッチ(リポジトリ固有チェッカーの接続用)

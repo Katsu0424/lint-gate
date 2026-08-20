@@ -1,6 +1,6 @@
 /* test-perspectives:
 正常系: yes
-エッジ: n/a 入力バリエーションの網羅は各チェッカーのテストが担う
+エッジ: yes
 異常系: yes
 否定: yes
 リグレッション: n/a 既知バグなし(発生時に追加)
@@ -55,6 +55,13 @@ describe("runHook", () => {
     });
     const errors = runHook(root, config, input("/repo/styles.css"));
     expect(errors.some((e) => e.includes("design violation"))).toBe(true);
+  });
+
+  it("[エッジ] filePattern(testFileRe)に従い .spec.ts 編集でも観点チェックが走る", () => {
+    root = makeTree({ "test/a.spec.ts": 'it("x", () => {});\n' });
+    const config = baseConfig({ testFileRe: /\.spec\.ts$/ });
+    const errors = runHook(root, config, input("/repo/test/a.spec.ts"));
+    expect(errors.some((e) => e.includes("test-perspectives ブロックがありません"))).toBe(true);
   });
 
   it("[否定] 対象外の拡張子(.md)ではツリーに違反があっても検査しない", () => {

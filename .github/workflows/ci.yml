@@ -1,8 +1,8 @@
 name: CI
 
 on:
+  # スタック PR(base が main 以外)でも CI を回すため、pull_request はブランチを絞らない
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 

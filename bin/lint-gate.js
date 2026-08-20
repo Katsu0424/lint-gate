@@ -30,6 +30,11 @@ function runTestPerspectives(root, config) {
   if (errors.length > 0) {
     reportAndExit(errors, "テスト観点チェックに失敗しました:");
   }
+  if (count === 0) {
+    console.error(
+      "警告: 対象のテストファイルが 0 件です。ゲートが効いていません(.spec.ts 等を使う場合は lint-gate.config.json の testPerspectives.filePattern を設定してください)",
+    );
+  }
   console.log(`lint-gate test-perspectives: OK(${count} ファイル)`);
 }
 

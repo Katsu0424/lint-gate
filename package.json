@@ -15,12 +15,14 @@
   "exports": {
     ".": "./src/eslint.js",
     "./biome": "./biome.json",
+    "./biome-lint": "./biome-lint.json",
     "./package.json": "./package.json"
   },
   "files": [
     "bin",
     "src",
-    "biome.json"
+    "biome.json",
+    "biome-lint.json"
   ],
   "scripts": {
     "issue-keeper": "issue-keeper",

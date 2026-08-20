@@ -19,6 +19,8 @@ describe("loadConfig", () => {
     expect(config.skipDirs.has("node_modules")).toBe(true);
     expect(config.suppressionsAllowlist).toBe("suppressions-allowlist.json");
     expect(config.fullPathPatterns[0].test("test/domain/a.test.ts")).toBe(true);
+    expect(config.testFileRe.test("a.test.ts")).toBe(true);
+    expect(config.testFileRe.test("a.spec.ts")).toBe(false);
     expect(config.extraChecks).toEqual([]);
   });
 
@@ -27,7 +29,10 @@ describe("loadConfig", () => {
       "lint-gate.config.json": JSON.stringify({
         skipDirs: ["fixtures"],
         suppressions: { allowlist: "scripts/suppressions-allowlist.json" },
-        testPerspectives: { fullPathPatterns: ["(^|/)packages/core/"] },
+        testPerspectives: {
+          fullPathPatterns: ["(^|/)packages/core/"],
+          filePattern: "\\.spec\\.ts$",
+        },
         hook: { extraChecks: [{ pattern: "\\.css$", command: ["node", "check.mjs"] }] },
       }),
     });
@@ -37,6 +42,8 @@ describe("loadConfig", () => {
     expect(config.suppressionsAllowlist).toBe("scripts/suppressions-allowlist.json");
     expect(config.fullPathPatterns[0].test("packages/core/a.test.ts")).toBe(true);
     expect(config.fullPathPatterns[0].test("test/domain/a.test.ts")).toBe(false);
+    expect(config.testFileRe.test("a.spec.ts")).toBe(true);
+    expect(config.testFileRe.test("a.test.ts")).toBe(false);
     expect(config.extraChecks).toHaveLength(1);
   });
 
