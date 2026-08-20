@@ -1,0 +1,56 @@
+{
+  "name": "lint-gate",
+  "version": "0.1.0",
+  "description": "リポジトリ横断で使う lint 品質ゲート: biome プリセット / ESLint 設定ファクトリ / 抑制コメント検出 / テスト観点チェック / Claude Code hook",
+  "type": "module",
+  "license": "MIT",
+  "repository": "github:Katsu0424/lint-gate",
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "lint-gate": "./bin/lint-gate.js"
+  },
+  "exports": {
+    ".": "./src/eslint.js",
+    "./biome": "./biome.json",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "bin",
+    "src",
+    "biome.json"
+  ],
+  "scripts": {
+    "lint": "biome check . && node bin/lint-gate.js suppressions && node bin/lint-gate.js test-perspectives",
+    "test": "vitest run"
+  },
+  "peerDependencies": {
+    "@biomejs/biome": ">=2",
+    "eslint": ">=9",
+    "eslint-plugin-sonarjs": ">=4",
+    "typescript-eslint": ">=8"
+  },
+  "peerDependenciesMeta": {
+    "@biomejs/biome": {
+      "optional": true
+    },
+    "eslint": {
+      "optional": true
+    },
+    "eslint-plugin-sonarjs": {
+      "optional": true
+    },
+    "typescript-eslint": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-sonarjs": "^4.2.0",
+    "typescript-eslint": "^8.46.4",
+    "vitest": "^3.2.4"
+  }
+}
