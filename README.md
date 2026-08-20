@@ -1,11 +1,12 @@
 # lint-gate
 
-リポジトリ横断で使う lint 品質ゲート。次の 4 つを 1 パッケージで提供する:
+リポジトリ横断で使う品質・行動の門番。次の 5 つを 1 パッケージで提供する:
 
 1. **Biome プリセット** — フォーマット + 一般 lint(認知的複雑度 15 上限、`!important` 禁止、focused/skipped テスト禁止)
 2. **ESLint 設定ファクトリ** — サイズ・複雑度・構造の上限専用(`complexity: 10` / `max-lines: 400` / 関数 80 行など)、インライン抑制の無効化、`@ts-ignore` 系の禁止、Promise 放置検出、任意でレイヤ境界(domain 層の I/O 禁止)
 3. **抑制コメント検出** — `eslint-disable` / `biome-ignore` / `@ts-ignore` 系ディレクティブの直書きを拒否(例外は allowlist に理由付きで登録)
 4. **テスト観点チェック** — 各テストファイル先頭の `test-perspectives` ブロック(正常系 / エッジ / 異常系 / 否定 / リグレッション)を強制
+5. **行動ガード(guard)** — 自律実行させる AI エージェント向けの「やってはいけない操作」の機械的ブロック(保護ブランチ上の編集・規約外ブランチでの編集・保護ファイルの編集・force push 等の禁止コマンド)
 
 思想: 例外はインラインの抑制コメントではなく、設定ファイル・allowlist でのみ管理する(許可リスト管理)。上限に当たったら分割で解消し、緩和しない。
 
@@ -71,18 +72,40 @@ export default createConfig({
   "hook": {
     // hook サブコマンドの追加ディスパッチ(リポジトリ固有チェッカーの接続用)
     "extraChecks": [{ "pattern": "\\.css$", "command": ["node", "scripts/check-design-tokens.mjs"] }]
+  },
+  "guard": {
+    // 各項目は既定値を丸ごと上書き(マージしない)
+    "protectedBranches": ["main", "master"],       // このブランチ上のリポジトリ内編集をブロック(既定)
+    "branchPattern": "^feature/issue-\\d+-",       // 任意。作業ブランチ名の必須パターン(不一致で編集ブロック)
+    "protectedFiles": ["(^|/)\\.env$"],            // 編集をブロックするパスパターン(既定)
+    "denyCommands": [                              // Bash コマンドの拒否パターン(既定: force push / gh repo delete)
+      "git\\s+push\\b[^&|;]*(--force\\b|\\s-f\\b)",
+      "gh\\s+repo\\s+delete\\b"
+    ]
   }
 }
 ```
 
 ### Claude Code hook
 
-編集のたびに違反を即差し戻す PostToolUse hook:
+品質(PostToolUse)と行動(PreToolUse)の両方を hooks で強制する:
 
 ```jsonc
 // .claude/settings.json
 {
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && node_modules/.bin/lint-gate guard",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
@@ -99,4 +122,5 @@ export default createConfig({
 }
 ```
 
-編集対象がテストなら観点チェック、ソースなら抑制チェック、`extraChecks` にマッチすればそのコマンドを実行し、違反があれば exit 2 で差し戻す。
+- **`lint-gate hook`(PostToolUse)** — 編集対象がテストなら観点チェック、ソースなら抑制チェック、`extraChecks` にマッチすればそのコマンドを実行し、違反があれば exit 2 で差し戻す
+- **`lint-gate guard`(PreToolUse)** — 操作の実行前に検査し、保護ブランチ上の編集 / `branchPattern` 不一致ブランチでの編集 / 保護ファイルの編集 / 禁止コマンドを exit 2 でブロックする。対象はリポジトリ配下のパスのみ(scratchpad 等リポジトリ外への書込は妨げない)。git リポジトリでない場合や detached HEAD ではブランチ系ガードをスキップする
