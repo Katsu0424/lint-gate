@@ -41,8 +41,10 @@ function checkFile(root, file, config) {
   }
   const declared = parseDeclarations(block[1]);
   const errors = PERSPECTIVES.map((p) =>
-    checkPerspective(rel, content, p, declared.get(p), required.includes(p)),
-  ).filter((e) => e !== null);
+    perspectiveError(p, declared.get(p), required.includes(p), content),
+  )
+    .filter((e) => e !== null)
+    .map((e) => `${rel}: ${e}`);
   for (const key of declared.keys()) {
     if (!PERSPECTIVES.includes(key)) {
       errors.push(`${rel}: 未知の観点「${key}」(現行の観点: ${PERSPECTIVES.join("・")})`);
@@ -66,15 +68,16 @@ function parseDeclarations(blockBody) {
   return declared;
 }
 
-function checkPerspective(rel, content, perspective, value, required) {
+// 観点 1 つ分の違反メッセージ(ファイル名は呼び出し側が付ける)。違反がなければ null
+function perspectiveError(perspective, value, required, content) {
   if (value === undefined) {
     if (!required) return null;
-    return `${rel}: 観点「${perspective}」の宣言が必須です(yes か n/a <理由>)`;
+    return `観点「${perspective}」の宣言が必須です(yes か n/a <理由>)`;
   }
   if (value === "yes") {
     if (content.includes(`[${perspective}]`)) return null;
-    return `${rel}: 観点「${perspective}」が yes なのに [${perspective}] タグ付きのテストがありません`;
+    return `観点「${perspective}」が yes なのに [${perspective}] タグ付きのテストがありません`;
   }
   if (/^n\/a\s+\S/.test(value)) return null;
-  return `${rel}: 観点「${perspective}」は "yes" か "n/a <理由>" で宣言してください(現在: "${value}")`;
+  return `観点「${perspective}」は "yes" か "n/a <理由>" で宣言してください(現在: "${value}")`;
 }

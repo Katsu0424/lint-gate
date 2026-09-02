@@ -1,6 +1,7 @@
 // lint 抑制コメントの検出器。
 // インラインの抑制ディレクティブを禁止し、どうしても必要な例外は
 // allowlist(JSON: {"path", "reason"} の配列)に登録されたファイルに限って許す。
+// oxlint は oxlint-disable と eslint-disable の両方を効かせるので両方を検出する。
 import { readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { walk } from "./walk.js";
@@ -8,7 +9,7 @@ import { walk } from "./walk.js";
 const TARGET_EXT = /\.(ts|tsx|js|jsx|mjs|cjs)$/;
 // ディレクティブ構文(コメント先頭)だけを検出する。散文中の言及は許す。
 const DIRECTIVE_RE =
-  /(?:\/\/|\/\*)\s*(eslint-(?:disable|enable)(?:-next-line|-line)?|biome-ignore|@ts-(?:ignore|nocheck|expect-error))\b/;
+  /(?:\/\/|\/\*)\s*((?:eslint|oxlint)-(?:disable|enable)(?:-next-line|-line)?|biome-ignore|@ts-(?:ignore|nocheck|expect-error))\b/;
 
 export function checkSuppressions(root, config) {
   const allowedPaths = loadAllowlist(join(root, config.suppressionsAllowlist));
