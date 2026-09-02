@@ -37,6 +37,7 @@ PdM の声で聞く: どの画面・どの操作・どのアカウント・い�
 `issue-keeper list --kind <kind>` を実行し、同じ主題を扱う既存タイトルがあれば上位候補(最大 4 件)+「新規作成」を AskUserQuestion で提示する。
 
 マージを選ばれたら `issue-keeper inspect <既存番号>` で確認し:
+
 - In Progress / Done なら拒否して番号・URL・Status を報告して終了
 - それ以外なら両方の本文を読み、一貫した 1 つの本文に書き直して `issue-keeper update <kind>` で該当セクションを書き換える
 

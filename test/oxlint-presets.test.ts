@@ -11,7 +11,32 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, makeTree, oxlintRaw, REPO_ROOT, runOxlint } from "./helpers.js";
 
-const PRESET = join(REPO_ROOT, "oxlintrc.json");
+const PRESET = join(REPO_ROOT, ".oxlintrc.json");
+// 組み込みの complexity / max-depth と自作の cognitive-complexity の両方に掛かる関数
+const COMPLEX_TS = [
+  "export function deep(a: number, b: number, c: number): number {",
+  "  let r = 0;",
+  "  for (let i = 0; i < a; i++) {",
+  "    if (b > 0 || c < 0) {",
+  "      if (c > 0) {",
+  "        while (r < 10) {",
+  "          if (i % 2 === 0) {",
+  "            if (r % 3 === 0) {",
+  "              r += a && b ? 1 : 2;",
+  "            } else if (r % 5 === 0) {",
+  "              r += 3;",
+  "            } else {",
+  "              r += 4;",
+  "            }",
+  "          }",
+  "        }",
+  "      }",
+  "    }",
+  "  }",
+  "  return r;",
+  "}",
+  "",
+].join("\n");
 const readJson = (rel: string) =>
   JSON.parse(readFileSync(join(REPO_ROOT, rel), "utf8")) as Record<string, unknown>;
 
@@ -32,9 +57,9 @@ function consumer(files: Record<string, string>): void {
 
 const codes = (diags: { code: string }[]) => [...new Set(diags.map((d) => d.code))].sort();
 
-describe("oxlintrc.json(プリセット)", () => {
+describe(".oxlintrc.json(プリセット。lint-gate 自身の dogfood 設定を兼ねる)", () => {
   it("[正常系] pinned oxlint の --print-config を通り、jsPlugins と上限ルールを含む", () => {
-    const result = oxlintRaw(REPO_ROOT, ["-c", "oxlintrc.json", "--print-config"]);
+    const result = oxlintRaw(REPO_ROOT, ["-c", ".oxlintrc.json", "--print-config"]);
     expect(result.status).toBe(0);
     const config = JSON.parse(result.stdout) as {
       jsPlugins: string[];
@@ -54,7 +79,7 @@ describe("oxlintrc.json(プリセット)", () => {
 
   it("[正常系] 利用側から extends すると自作ルールと組み込みルールの両方が効く", () => {
     consumer({
-      "src/cog.ts": readFileSync(join(REPO_ROOT, "test/fixtures/oxlint/cog.ts"), "utf8"),
+      "src/cog.ts": COMPLEX_TS,
     });
     const found = codes(runOxlint(root, ["src"]));
     expect(found).toContain("lint-gate(cognitive-complexity)");
@@ -146,25 +171,26 @@ describe("oxlintrc.json(プリセット)", () => {
   });
 });
 
-describe("dogfood 設定とプリセットの同期", () => {
-  it("[正常系] .oxlintrc.json はプリセットを extends し、node_modules とフィクスチャを除外する", () => {
-    const dogfood = readJson(".oxlintrc.json");
-    expect(dogfood.extends).toEqual(["./oxlintrc.json"]);
-    expect(dogfood.ignorePatterns).toContain("**/node_modules/**");
-    expect(dogfood.ignorePatterns).toContain("test/fixtures/**");
+describe("配布物 = dogfood 設定(1 ファイルずつ)", () => {
+  it("[正常系] .oxlintrc.json は extends を持たず、jsPlugins と node_modules 除外を含む", () => {
+    const preset = readJson(".oxlintrc.json");
+    expect(preset.extends).toBeUndefined();
+    expect(preset.jsPlugins).toEqual(["./oxlint-plugin.mjs"]);
+    expect(preset.ignorePatterns).toEqual(["**/node_modules/**"]);
   });
 
-  it("[正常系] .oxfmtrc.json は oxfmtrc.json(プリセット)の全キーを同じ値で含む(oxfmt は extends を持たない)", () => {
-    const preset = readJson("oxfmtrc.json");
-    const dogfood = readJson(".oxfmtrc.json");
-    expect(Object.keys(preset).length).toBeGreaterThan(0);
-    for (const [k, v] of Object.entries(preset)) expect(dogfood[k]).toEqual(v);
-  });
-
-  it("[正常系] oxfmtrc.json は pinned oxfmt で読める", () => {
+  it("[正常系] .oxfmtrc.json は整形オプションだけを持ち、pinned oxfmt で読める", () => {
+    const preset = readJson(".oxfmtrc.json");
+    expect(Object.keys(preset).sort()).toEqual([
+      "printWidth",
+      "semi",
+      "singleQuote",
+      "tabWidth",
+      "useTabs",
+    ]);
     const result = spawnSync(
       join(REPO_ROOT, "node_modules/.bin/oxfmt"),
-      ["-c", "oxfmtrc.json", "--check", "oxlint-plugin.mjs"],
+      ["-c", ".oxfmtrc.json", "--check", "oxlint-plugin.mjs"],
       { cwd: REPO_ROOT, encoding: "utf8" },
     );
     expect(result.status).toBe(0);
