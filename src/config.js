@@ -14,6 +14,7 @@ const BASE_SKIP_DIRS = [
 ];
 
 const DEFAULT_TEST_FILE_PATTERN = "\\.test\\.(ts|tsx|js|jsx|mjs|cjs)$";
+const DEFAULT_FULL_PATH_PATTERNS = ["(^|/)test/domain/"];
 const DEFAULT_PROTECTED_BRANCHES = ["main", "master"];
 const DEFAULT_PROTECTED_FILES = ["(^|/)\\.env$"];
 // force push(--force / -f / --force-with-lease)とリポジトリ削除。
@@ -28,12 +29,18 @@ export function loadConfig(root) {
   return {
     skipDirs: new Set([...BASE_SKIP_DIRS, ...(raw.skipDirs ?? [])]),
     suppressionsAllowlist: raw.suppressions?.allowlist ?? "suppressions-allowlist.json",
-    fullPathPatterns: (raw.testPerspectives?.fullPathPatterns ?? ["(^|/)test/domain/"]).map(
-      (p) => new RegExp(p),
-    ),
-    testFileRe: new RegExp(raw.testPerspectives?.filePattern ?? DEFAULT_TEST_FILE_PATTERN),
+    ...testPerspectivesConfig(raw.testPerspectives ?? {}),
     extraChecks: raw.hook?.extraChecks ?? [],
     guard: guardConfig(raw.guard ?? {}),
+  };
+}
+
+function testPerspectivesConfig(raw) {
+  return {
+    fullPathPatterns: (raw.fullPathPatterns ?? DEFAULT_FULL_PATH_PATTERNS).map(
+      (p) => new RegExp(p),
+    ),
+    testFileRe: new RegExp(raw.filePattern ?? DEFAULT_TEST_FILE_PATTERN),
   };
 }
 

@@ -1,0 +1,63 @@
+{
+  "plugins": ["typescript", "vitest", "unicorn", "oxc"],
+  "jsPlugins": ["./oxlint-plugin.mjs"],
+  "categories": { "correctness": "error" },
+  "rules": {
+    "complexity": ["error", 10],
+    "max-depth": ["error", 4],
+    "max-lines": ["error", { "max": 400, "skipBlankLines": true, "skipComments": true }],
+    "max-lines-per-function": [
+      "error",
+      { "max": 80, "skipBlankLines": true, "skipComments": true }
+    ],
+    "max-nested-callbacks": ["error", 4],
+    "max-params": ["error", 4],
+    "max-statements": ["error", 30],
+    "typescript/ban-ts-comment": [
+      "error",
+      { "ts-ignore": true, "ts-nocheck": true, "ts-expect-error": true, "ts-check": false }
+    ],
+    "no-empty": ["error", { "allowEmptyCatch": false }],
+    "no-dupe-else-if": "error",
+    "no-duplicate-case": "error",
+    "no-constant-binary-expression": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "vitest/expect-expect": "error",
+    "vitest/no-focused-tests": "error",
+    "vitest/no-disabled-tests": "error",
+    "vitest/require-to-throw-message": "off",
+    "lint-gate/cognitive-complexity": ["error", 15],
+    "lint-gate/no-identical-functions": "error",
+    "lint-gate/no-all-duplicated-branches": "error",
+    "lint-gate/no-element-overwrite": "error",
+    "lint-gate/no-invariant-returns": "error"
+  },
+  "overrides": [
+    {
+      "files": ["**/src/domain/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["node:*"],
+                "message": "domain 層は I/O 禁止(純関数のみ)。I/O は adapter / usecase に置く。"
+              },
+              {
+                "group": ["**/adapter/**", "**/usecase/**", "**/cli/**", "**/adapters/**"],
+                "message": "domain は外側の層に依存しない(依存は内向きのみ)。"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["**/test/**/*.ts", "**/*.test.ts", "**/*.stories.tsx"],
+      "rules": { "max-lines": "off", "max-lines-per-function": "off", "max-statements": "off" }
+    }
+  ]
+}

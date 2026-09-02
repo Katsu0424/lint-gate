@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "strict": true,
+    "allowJs": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["bin", "src", "test", "oxlint-plugin.mjs"],
+  "exclude": ["node_modules", "test/fixtures"]
+}
