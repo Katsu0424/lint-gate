@@ -1,7 +1,7 @@
 {
   "name": "lint-gate",
   "version": "0.2.0",
-  "description": "リポジトリ横断で使う lint 品質ゲート: oxlint プリセット + 自作ルール(認知的複雑度・sonarjs 相当)/ oxfmt プリセット / 抑制コメント検出 / テスト観点チェック / Claude Code hook",
+  "description": "リポジトリ横断で使う lint 品質ゲート(1 依存 + 1 コマンド): oxlint / oxfmt 同梱の lint-gate check、oxlint プリセット + 自作ルール(認知的複雑度・sonarjs 相当)、抑制コメント検出、テスト観点チェック、Claude Code hook",
   "license": "MIT",
   "repository": "github:Katsu0424/lint-gate",
   "bin": {
@@ -10,42 +10,31 @@
   "files": [
     "bin",
     "src",
-    "oxlintrc.json",
+    ".oxlintrc.json",
     "oxlint-plugin.mjs",
-    "oxfmtrc.json"
+    ".oxfmtrc.json"
   ],
   "type": "module",
   "exports": {
-    "./oxlint": "./oxlintrc.json",
+    "./oxlint": "./.oxlintrc.json",
     "./oxlint-plugin": "./oxlint-plugin.mjs",
-    "./oxfmt": "./oxfmtrc.json",
+    "./oxfmt": "./.oxfmtrc.json",
     "./package.json": "./package.json"
   },
   "scripts": {
     "issue-keeper": "issue-keeper",
-    "lint": "oxlint --type-aware . && oxfmt --check . && node bin/lint-gate.js suppressions && node bin/lint-gate.js test-perspectives",
+    "lint": "node bin/lint-gate.js check",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "oxfmt": "0.65.0",
+    "oxlint": "1.80.0",
+    "oxlint-tsgolint": "7.0.2001"
   },
   "devDependencies": {
     "@types/node": "^22",
     "issue-keeper": "github:Katsu0424/issue-keeper",
-    "oxfmt": "0.65.0",
-    "oxlint": "1.80.0",
-    "oxlint-tsgolint": "7.0.2001",
     "vitest": "^3.2.4"
-  },
-  "peerDependencies": {
-    "oxfmt": ">=0.65 <1",
-    "oxlint": ">=1.80 <2",
-    "oxlint-tsgolint": ">=7.0.2001 <8"
-  },
-  "peerDependenciesMeta": {
-    "oxfmt": {
-      "optional": true
-    },
-    "oxlint-tsgolint": {
-      "optional": true
-    }
   },
   "engines": {
     "node": ">=20"

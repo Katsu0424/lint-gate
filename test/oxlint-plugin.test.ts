@@ -5,16 +5,44 @@
 否定: yes
 リグレッション: n/a 既知バグなし(発生時に追加)
 */
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, makeTree, oxlintRaw, REPO_ROOT, runOxlint } from "./helpers.js";
 
 const PLUGIN = join(REPO_ROOT, "oxlint-plugin.mjs");
-const FIXTURES = join(REPO_ROOT, "test/fixtures/oxlint");
-// 固定値の材料(sonarjs との同値性を検証したときの入力)
-const COG_TS = readFileSync(join(FIXTURES, "cog.ts"), "utf8");
-const RULES_JS = readFileSync(join(FIXTURES, "rules.js"), "utf8");
+// 固定値の材料(sonarjs との同値性を検証したときの入力をそのまま埋め込む)
+// cog.ts: 認知的複雑度 cog = 76 / branches = 2 / invariant = 1
+const COG_TS = `export function cog(a: number, b: number, c: number): number {
+  let r = 0;
+  if (a > 0) { if (b > 0) { if (c > 0) { for (let i = 0; i < a; i++) { if (i % 2 === 0) { while (r < 10) { r += a && b ? 1 : 2; if (r === 5) { r++; } } } else if (i % 3 === 0) { r += 2; } else { r += 3; } } } } }
+  if (a > 0) { if (b > 0) { if (c > 0) { for (let i = 0; i < a; i++) { if (i % 2 === 0) { while (r < 10) { r += a && b ? 1 : 2; if (r === 5) { r++; } } } else if (i % 3 === 0) { r += 2; } else { r += 3; } } } } }
+  return r;
+}
+export function branches(x: number): number { if (x > 0) { return 1; } else { return 1; } }
+export function invariant(x: number): number { if (x > 0) { return 5; } return 5; }
+`;
+// rules.js: 検知 = dupB(dupA と同一)/ branches・sw・tern / overwrite の arr[0] = 2 と m.set("k", 2) / invariant・invariantConst
+//           非検知 = notInvariant / implicitEnd / sideEffect / arr[1] = arr[1] + 1
+const RULES_JS = `export function dupA(x) {
+  const y = x * 2;
+  const z = y + 1;
+  return z * z;
+}
+export const dupB = (x) => {
+  const y = x * 2;
+  const z = y + 1;
+  return z * z;
+};
+export function branches(x) { if (x > 0) { doIt(1); } else if (x < 0) { doIt(1); } else { doIt(1); } }
+export function sw(x) { switch (x) { case 1: doIt(); break; case 2: doIt(); break; default: doIt(); } }
+export const tern = (x) => (x ? 1 : 1);
+export function overwrite() { const arr = [0, 0]; arr[0] = 1; arr[0] = 2; const m = new Map(); m.set("k", 1); m.set("k", 2); arr[1] = 1; arr[1] = arr[1] + 1; return [arr, m]; }
+export function invariant(x) { if (x > 0) { return 5; } return 5; }
+export function invariantConst(x) { const v = "a"; if (x) { return v; } return v; }
+export function notInvariant(x) { if (x > 0) { return 5; } return 6; }
+export function implicitEnd(x) { if (x > 0) { return 5; } if (x < 0) { return 5; } }
+export function sideEffect(x) { if (x) { doIt(); return true; } return true; }
+`;
 const SONAR_RULES = {
   "lint-gate/no-identical-functions": "error",
   "lint-gate/no-all-duplicated-branches": "error",
