@@ -44,15 +44,19 @@ lint-gate を入れた利用側リポジトリで「何が、どの順で、ど�
 
 ## プリセットが拒否するもの
 
-| 分類                        | ルール                                                                                                                                                                                                                                |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| サイズ・複雑度              | `complexity` 10 / `lint-gate/cognitive-complexity` 15 / `max-depth` 4 / `max-lines` 400 / `max-lines-per-function` 80 / `max-nested-callbacks` 4 / `max-params` 4 / `max-statements` 30(`test/` と `*.test.ts` では行数系 3 つを off) |
-| 型検査のバイパス            | `typescript/ban-ts-comment`(`@ts-ignore` / `@ts-nocheck` / `@ts-expect-error`)                                                                                                                                                        |
-| 放置された Promise(型情報)  | `typescript/no-floating-promises` / `no-misused-promises` / `await-thenable`                                                                                                                                                          |
-| 例外の握りつぶし・重複分岐  | `no-empty` / `no-dupe-else-if` / `no-duplicate-case` / `no-constant-binary-expression` / `lint-gate/no-identical-functions` / `no-all-duplicated-branches` / `no-element-overwrite` / `no-invariant-returns`                          |
-| テストの形骸化              | `vitest/expect-expect` / `no-focused-tests` / `no-disabled-tests`                                                                                                                                                                     |
-| レイヤ境界                  | `src/domain/**/*.ts` での `node:*` と adapter / usecase / cli への import(`no-restricted-imports`)                                                                                                                                    |
-| 既定の correctness カテゴリ | error に引き上げ(既定の warn では CI が落ちない)。`vitest/require-to-throw-message` だけは雑音なので off                                                                                                                              |
+| 分類                                | ルール                                                                                                                                                                                                                                |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| サイズ・複雑度                      | `complexity` 10 / `lint-gate/cognitive-complexity` 15 / `max-depth` 4 / `max-lines` 400 / `max-lines-per-function` 80 / `max-nested-callbacks` 4 / `max-params` 4 / `max-statements` 30(`test/` と `*.test.ts` では行数系 3 つを off) |
+| 型検査のバイパス                    | `typescript/ban-ts-comment`(`@ts-ignore` / `@ts-nocheck` / `@ts-expect-error`)                                                                                                                                                        |
+| 放置された Promise(型情報)          | `typescript/no-floating-promises` / `no-misused-promises` / `await-thenable`                                                                                                                                                          |
+| 例外の握りつぶし・重複分岐          | `no-empty` / `no-dupe-else-if` / `no-duplicate-case` / `no-constant-binary-expression` / `lint-gate/no-identical-functions` / `no-all-duplicated-branches` / `no-element-overwrite` / `no-invariant-returns`                          |
+| import の衛生                       | `import/no-cycle` / `no-self-import` / `no-duplicates` / `named` / `export`(未解決 import は oxlint に無く `tsc` の領域。`import/default` は Vite の `?url` 等を誤検知するため off)                                                   |
+| 型の網羅とエラーの型(型情報)        | `typescript/switch-exhaustiveness-check` / `only-throw-error` / `prefer-promise-reject-errors`                                                                                                                                        |
+| `any` の直書き                      | `typescript/no-explicit-any`                                                                                                                                                                                                          |
+| Promise・エラー・spread・引数の衛生 | `promise/no-return-in-finally` / `no-multiple-resolved` / `unicorn/no-useless-promise-resolve-reject` / `error-message` / `throw-new-error` / `prefer-node-protocol` / `oxc/no-accumulating-spread` / `no-param-reassign`             |
+| テストの形骸化                      | `vitest/expect-expect` / `no-focused-tests` / `no-disabled-tests`                                                                                                                                                                     |
+| レイヤ境界                          | `src/domain/**/*.ts` での `node:*` と adapter / usecase / cli への import(`no-restricted-imports`)                                                                                                                                    |
+| 既定の correctness カテゴリ         | error に引き上げ(既定の warn では CI が落ちない)。`import` / `promise` プラグインの correctness ルールも含む。`vitest/require-to-throw-message` と `import/default` は雑音・誤検知なので off                                          |
 
 ### 自作ルール(`lint-gate/*`)
 

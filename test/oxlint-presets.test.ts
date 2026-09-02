@@ -12,6 +12,26 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, makeTree, oxlintRaw, REPO_ROOT, runOxlint } from "./helpers.js";
 
 const PRESET = join(REPO_ROOT, ".oxlintrc.json");
+// #14 で追加したルール(利用側で 0 件を確認済みのもの)
+const ADDED_RULES = [
+  "import/no-cycle",
+  "import/no-self-import",
+  "import/no-duplicates",
+  "import/named",
+  "import/export",
+  "typescript/switch-exhaustiveness-check",
+  "typescript/only-throw-error",
+  "typescript/prefer-promise-reject-errors",
+  "typescript/no-explicit-any",
+  "promise/no-return-in-finally",
+  "promise/no-multiple-resolved",
+  "unicorn/no-useless-promise-resolve-reject",
+  "unicorn/error-message",
+  "unicorn/throw-new-error",
+  "unicorn/prefer-node-protocol",
+  "oxc/no-accumulating-spread",
+  "no-param-reassign",
+];
 // 組み込みの complexity / max-depth と自作の cognitive-complexity の両方に掛かる関数
 const COMPLEX_TS = [
   "export function deep(a: number, b: number, c: number): number {",
@@ -75,6 +95,52 @@ describe(".oxlintrc.json(プリセット。lint-gate 自身の dogfood 設定を
     ]) {
       expect(config.rules).toHaveProperty(rule);
     }
+  });
+
+  it("[正常系] 2026-09 に追加した 16 ルールが --print-config に含まれる", () => {
+    const result = oxlintRaw(REPO_ROOT, ["-c", ".oxlintrc.json", "--print-config"]);
+    const config = JSON.parse(result.stdout) as { rules: Record<string, unknown> };
+    for (const rule of ADDED_RULES) expect(config.rules).toHaveProperty(rule);
+    // oxlint は --print-config で off を allow に正規化する
+    expect(config.rules["import/default"]).toBe("allow");
+  });
+
+  it("[異常系] 循環 import・any の直書き・自己 import を拒否する", () => {
+    consumer({
+      "src/a.ts": 'import { b } from "./b.js";\nexport const a: number = b + 1;\n',
+      "src/b.ts": 'import { a } from "./a.js";\nexport const b: number = a + 1;\n',
+      "src/any.ts": "export function f(v: any): string {\n  return String(v);\n}\n",
+    });
+    const found = codes(runOxlint(root, ["src"]));
+    expect(found).toContain("import(no-cycle)");
+    expect(found).toContain("typescript(no-explicit-any)");
+  });
+
+  it("[異常系] 型情報ルール: union の網羅漏れと Error 以外の throw を拒否する(--type-aware)", () => {
+    consumer({
+      "tsconfig.json": JSON.stringify({
+        compilerOptions: { strict: true, noEmit: true },
+        include: ["src"],
+      }),
+      "src/s.ts": [
+        'type Kind = "a" | "b";',
+        "export function label(k: Kind): number {",
+        "  switch (k) {",
+        '    case "a":',
+        "      return 1;",
+        "  }",
+        "  return 0;",
+        "}",
+        "export function fail(): never {",
+        '  throw "not an Error";',
+        "}",
+        "",
+      ].join("\n"),
+    });
+    symlinkSync(join(REPO_ROOT, "node_modules"), join(root, "node_modules"), "dir");
+    const found = codes(runOxlint(root, ["--type-aware", "src"]));
+    expect(found).toContain("typescript(switch-exhaustiveness-check)");
+    expect(found).toContain("typescript(only-throw-error)");
   });
 
   it("[正常系] 利用側から extends すると自作ルールと組み込みルールの両方が効く", () => {
