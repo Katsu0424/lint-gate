@@ -1,6 +1,6 @@
 # lint 構成の全体像
 
-lint-gate を入れた利用側リポジトリで「何が、どの順で、どの設定を読んで動くか」をまとめる。導入手順は [README](../README.md)。
+lint-gate を入れた利用側リポジトリで「何が、どの順で、どの設定を読んで動くか」をまとめる。導入手順は [README](../README.md)、機械的に拒否できるもの・できないものの一覧は wiki [lint でできること・できないこと](https://github.com/Katsu0424/lint-gate/wiki/lint-でできること・できないこと)。
 
 ## 1 コマンドで動く 4 段
 

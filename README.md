@@ -11,7 +11,7 @@
 
 思想: 例外はインラインの抑制コメントではなく、設定ファイル・allowlist でのみ管理する(許可リスト管理)。上限に当たったら分割で解消し、緩和しない。lint エンジンは oxlint 1 本(型情報ルールは oxlint-tsgolint、整形は oxfmt)に絞り、2 エンジン並存でルールが重複して片方だけ緩められる事態を防ぐ。
 
-何がどの順で動き、どのファイルがどこに効くかの全体像は [docs/lint-architecture.md](docs/lint-architecture.md) にまとめてある。
+読む順: この README(導入手順)→ [docs/lint-architecture.md](docs/lint-architecture.md)(何がどの順で動き、どのファイルがどこに効くか)→ wiki [lint でできること・できないこと](https://github.com/Katsu0424/lint-gate/wiki/lint-でできること・できないこと)(機械的に拒否できるものと、できない・別の手段が要るもの)。
 
 ## インストール
 
