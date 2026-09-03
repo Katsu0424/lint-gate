@@ -127,6 +127,7 @@ function recordParams(fn, name, info) {
 }
 
 function variableInfo(fn, name) {
+  /** @type {{ declared: boolean; init: object | null; hasInitWrite: boolean; defs: number; writes: number; reads: object[] }} */
   const info = { declared: false, init: null, hasInitWrite: false, defs: 0, writes: 0, reads: [] };
   recordParams(fn, name, info);
   const top = fn.body.type === "BlockStatement" ? fn.body.body : [];
@@ -174,8 +175,8 @@ function constInitValue(name, fn) {
 }
 
 // ---- return の収集と副作用分岐の判定 ----
+// 呼び出し側は常に親ノードを渡す
 function isBranchBody(n, p) {
-  if (!p) return false;
   if (p.type === "IfStatement") return n === p.consequent || n === p.alternate;
   return LOOP.has(p.type) && n === p.body;
 }
