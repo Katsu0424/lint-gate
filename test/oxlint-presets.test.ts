@@ -32,6 +32,25 @@ const ADDED_RULES = [
   "oxc/no-accumulating-spread",
   "no-param-reassign",
 ];
+// #16 で追加したルール(AI 主導の開発で起きやすい失敗を拒否する)
+const ADDED_RULES_2 = [
+  "typescript/no-unnecessary-condition",
+  "typescript/no-deprecated",
+  "typescript/return-await",
+  "typescript/require-await",
+  "promise/catch-or-return",
+  "no-shadow",
+  "eqeqeq",
+  "prefer-const",
+  "no-var",
+  "no-template-curly-in-string",
+  "array-callback-return",
+  "radix",
+  "no-loop-func",
+  "typescript/prefer-nullish-coalescing",
+  "vitest/no-identical-title",
+  "typescript/no-non-null-assertion",
+];
 // 組み込みの complexity / max-depth と自作の cognitive-complexity の両方に掛かる関数
 const COMPLEX_TS = [
   "export function deep(a: number, b: number, c: number): number {",
@@ -105,6 +124,94 @@ describe(".oxlintrc.json(プリセット。lint-gate 自身の dogfood 設定を
     expect(config.rules["import/default"]).toBe("allow");
   });
 
+  it("[正常系] #16 で追加した 16 ルールが --print-config に含まれる", () => {
+    const result = oxlintRaw(REPO_ROOT, ["-c", ".oxlintrc.json", "--print-config"]);
+    const config = JSON.parse(result.stdout) as { rules: Record<string, unknown> };
+    for (const rule of ADDED_RULES_2) expect(config.rules).toHaveProperty(rule);
+  });
+
+  it("[異常系] == / shadow / 再代入の無い let / ソースの非 null 断定を拒否し、テストの非 null 断定は許す", () => {
+    consumer({
+      "src/eq.ts": "export function eq(a: number, b: number): boolean {\n  return a == b;\n}\n",
+      "src/shadow.ts":
+        "export const x = 1;\nexport function f(): number {\n  const x = 2;\n  return x;\n}\n",
+      "src/letx.ts": "export function g(): number {\n  let n = 1;\n  return n;\n}\n",
+      "src/bang.ts": "export function h(s: string | null): number {\n  return s!.length;\n}\n",
+      "test/bang.test.ts": [
+        'import { expect, it } from "vitest";',
+        'it("bang", () => {',
+        '  const s: string | null = "a";',
+        "  expect(s!.length).toBe(1);",
+        "});",
+        "",
+      ].join("\n"),
+    });
+    const diags = runOxlint(root, ["src", "test"]);
+    const inSrc = codes(diags.filter((d) => d.file.startsWith("src/")));
+    for (const c of [
+      "eslint(eqeqeq)",
+      "eslint(no-shadow)",
+      "eslint(prefer-const)",
+      "typescript(no-non-null-assertion)",
+    ]) {
+      expect(inSrc).toContain(c);
+    }
+    expect(codes(diags.filter((d) => d.file.startsWith("test/")))).not.toContain(
+      "typescript(no-non-null-assertion)",
+    );
+  });
+
+  it("[異常系] 型情報ルール: 型を誤解した死に分岐・deprecated な API・try 内の return promise を拒否する(--type-aware)", () => {
+    consumer({
+      "tsconfig.json": JSON.stringify({
+        compilerOptions: { strict: true, noEmit: true },
+        include: ["src"],
+      }),
+      "src/dead.ts": [
+        "export function dead(s: string): number {",
+        "  if (s === undefined) {",
+        "    return 0;",
+        "  }",
+        "  return s.length;",
+        "}",
+        "",
+      ].join("\n"),
+      "src/old.ts": [
+        "/** @deprecated next を使う */",
+        "export function old(): number {",
+        "  return 1;",
+        "}",
+        "export function next(): number {",
+        "  return old() + 1;",
+        "}",
+        "",
+      ].join("\n"),
+      "src/ra.ts": [
+        "async function inner(): Promise<number> {",
+        "  const v = await Promise.resolve(1);",
+        "  return v;",
+        "}",
+        "export async function outer(): Promise<number> {",
+        "  try {",
+        "    return inner();",
+        "  } catch {",
+        "    return 0;",
+        "  }",
+        "}",
+        "",
+      ].join("\n"),
+    });
+    symlinkSync(join(REPO_ROOT, "node_modules"), join(root, "node_modules"), "dir");
+    const found = codes(runOxlint(root, ["--type-aware", "src"]));
+    for (const c of [
+      "typescript(no-unnecessary-condition)",
+      "typescript(no-deprecated)",
+      "typescript(return-await)",
+    ]) {
+      expect(found).toContain(c);
+    }
+  });
+
   it("[異常系] 循環 import・any の直書き・自己 import を拒否する", () => {
     consumer({
       "src/a.ts": 'import { b } from "./b.js";\nexport const a: number = b + 1;\n',
@@ -161,7 +268,8 @@ describe(".oxlintrc.json(プリセット。lint-gate 自身の dogfood 設定を
       }),
       "src/p.ts": [
         "export async function f(): Promise<number> {",
-        "  return 1;",
+        "  const v = await Promise.resolve(1);",
+        "  return v;",
         "}",
         "export function g(): void {",
         "  f();",

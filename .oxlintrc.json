@@ -70,6 +70,28 @@
     "unicorn/prefer-node-protocol": "error",
     "oxc/no-accumulating-spread": "error",
     "no-param-reassign": "error",
+    "typescript/no-unnecessary-condition": "error",
+    "typescript/no-deprecated": "error",
+    "typescript/return-await": ["error", "in-try-catch"],
+    "typescript/require-await": "error",
+    "promise/catch-or-return": "error",
+    "no-shadow": "error",
+    "eqeqeq": [
+      "error",
+      "always",
+      {
+        "null": "ignore"
+      }
+    ],
+    "prefer-const": "error",
+    "no-var": "error",
+    "no-template-curly-in-string": "error",
+    "array-callback-return": "error",
+    "radix": "error",
+    "no-loop-func": "error",
+    "typescript/prefer-nullish-coalescing": "error",
+    "vitest/no-identical-title": "error",
+    "typescript/no-non-null-assertion": "error",
     "lint-gate/cognitive-complexity": ["error", 15],
     "lint-gate/no-identical-functions": "error",
     "lint-gate/no-all-duplicated-branches": "error",
@@ -98,11 +120,20 @@
       }
     },
     {
-      "files": ["**/test/**/*.ts", "**/*.test.ts", "**/*.stories.tsx"],
+      "files": [
+        "**/test/**/*.ts",
+        "**/tests/**/*.ts",
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/*.spec.tsx",
+        "**/*.stories.tsx"
+      ],
       "rules": {
         "max-lines": "off",
         "max-lines-per-function": "off",
-        "max-statements": "off"
+        "max-statements": "off",
+        "typescript/no-non-null-assertion": "off"
       }
     }
   ]

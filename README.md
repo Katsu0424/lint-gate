@@ -3,7 +3,7 @@
 リポジトリ横断で使う品質・行動の門番。利用側は **devDependencies 1 つ(lint-gate)と lint script 1 語(`lint-gate check`)** で次を手に入れる:
 
 1. **`lint-gate check`** — 同梱した oxlint(型情報ルール込み)→ oxfmt → 抑制コメント検出 → テスト観点チェックを順に実行し、最初の失敗で止まる
-2. **oxlint プリセット + 自作ルール** — サイズ・複雑度・構造の上限(`complexity: 10` / 認知的複雑度 15 / `max-lines: 400` / 関数 80 行など)、`@ts-ignore` 系の禁止、放置 Promise の検出、focused / skipped テストの禁止、循環 import の禁止、union の網羅漏れと `any` の直書きの禁止、sonarjs 相当 4 ルール(同一関数・全分岐同一・要素上書き・不変 return)、レイヤ境界(`src/domain/` の I/O 禁止)
+2. **oxlint プリセット + 自作ルール** — サイズ・複雑度・構造の上限(`complexity: 10` / 認知的複雑度 15 / `max-lines: 400` / 関数 80 行など)、`@ts-ignore` 系の禁止、放置 Promise の検出、focused / skipped テストの禁止、循環 import の禁止、union の網羅漏れと `any` の直書きの禁止、古い(deprecated)API の利用・型を誤解した死に分岐・`==` の検知、ソースでの `!`(非 null 断定)禁止、sonarjs 相当 4 ルール(同一関数・全分岐同一・要素上書き・不変 return)、レイヤ境界(`src/domain/` の I/O 禁止)
 3. **oxfmt プリセット** — 整形(printWidth 100 / セミコロンあり / ダブルクォート / スペース 2)。`lint-gate fmt` で書き込む
 4. **抑制コメント検出** — `oxlint-disable` / `eslint-disable` / `biome-ignore` / `@ts-ignore` 系ディレクティブの直書きを拒否(例外は allowlist に理由付きで登録)
 5. **テスト観点チェック** — 各テストファイル先頭の `test-perspectives` ブロック(正常系 / エッジ / 異常系 / 否定 / リグレッション)を強制
